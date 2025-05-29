@@ -50,7 +50,7 @@ Sistema de mapas interactivo para visualización y gestión de puntos de interé
 
 ```bash
 # 1. Clonar el repositorio
-git clone https://github.com/tu-usuario/gis-project-front.git
+git clone https://github.com/Bfarez21/GIS_Project_Front.git
 cd gis-project-front
 
 # 2. Instalar dependencias

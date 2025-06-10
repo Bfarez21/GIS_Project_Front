@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from 'react-le
 import axios from 'axios'; //Para hacer peticiones HTTP a APIs
 import L from 'leaflet'; // Biblioteca principal para mapas
 import 'leaflet/dist/leaflet.css'; //Estilos CSS base de Leaflet
+import CrearPuntoInteresModal from './CrearPuntoInteresModal';
 
 // Fix para iconos de Leaflet
 delete L.Icon.Default.prototype._getIconUrl;
@@ -47,7 +48,7 @@ const RutaComponent = ({ origen, destino, onRutaCalculada }) => {
     if (origen && destino) {
       calcularRuta();
     }
-    
+
     return () => {
       if (rutaRef.current) {
         map.removeLayer(rutaRef.current);
@@ -64,7 +65,7 @@ const RutaComponent = ({ origen, destino, onRutaCalculada }) => {
 
       // Usar OpenRouteService (gratuito) para calcular la ruta
       const response = await axios.get(
-                 `https://api.openrouteservice.org/v2/directions/driving-car?api_key=5b3ce3597851110001cf6248c9b6c6a77eac478ca5f3ab5e2f3a0139&start=${origen.lng},${origen.lat}&end=${destino.lng},${destino.lat}`
+        `https://api.openrouteservice.org/v2/directions/driving-car?api_key=5b3ce3597851110001cf6248c9b6c6a77eac478ca5f3ab5e2f3a0139&start=${origen.lng},${origen.lat}&end=${destino.lng},${destino.lat}`
         // `https://api.openrouteservice.org/v2/directions/driving-car?api_key=5b3ce3597851110001cf6248c9b6c6a77eac478ca5f3ab5e2f3a0139&start=${origen[1]},${origen[0]}&end=${destino[1]},${destino[0]}`
       );
 
@@ -104,7 +105,7 @@ const RutaComponent = ({ origen, destino, onRutaCalculada }) => {
         opacity: 0.6,
         dashArray: '15, 10'
       }).addTo(map);
-      
+
       onRutaCalculada({
         duracion: null,
         distancia: calcularDistanciaDirecta(origen, destino),
@@ -117,10 +118,10 @@ const RutaComponent = ({ origen, destino, onRutaCalculada }) => {
     const R = 6371; // Radio de la Tierra en km
     const dLat = (punto2[0] - punto1[0]) * Math.PI / 180;
     const dLon = (punto2[1] - punto1[1]) * Math.PI / 180;
-    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-              Math.cos(punto1[0] * Math.PI / 180) * Math.cos(punto2[0] * Math.PI / 180) *
-              Math.sin(dLon/2) * Math.sin(dLon/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(punto1[0] * Math.PI / 180) * Math.cos(punto2[0] * Math.PI / 180) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return (R * c).toFixed(1);
   };
 
@@ -132,7 +133,7 @@ const MapComponent = () => {
   const [loading, setLoading] = useState(true);
   const [filtroCategoria, setFiltroCategoria] = useState('');
   const [categorias, setCategorias] = useState([]);
-  
+
   // Estados existentes
   const [busquedaTexto, setBusquedaTexto] = useState('');
   const [radioBusqueda, setRadioBusqueda] = useState(2000);
@@ -155,6 +156,20 @@ const MapComponent = () => {
     cargarPuntos();
     cargarCategorias();
   }, []);
+
+  // ESTADOS PARA CREA PUNTOS INTERES
+  const [puntosInteres, setPuntosInteres] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+
+  // Función para manejar cuando se crea un nuevo punto
+  const handlePuntoCreado = (nuevoPunto) => {
+    setPuntosInteres(prevPuntos => [...prevPuntos, nuevoPunto]);
+    setShowModal(false);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+  };
 
   const cargarPuntos = async () => {
     try {
@@ -218,7 +233,7 @@ const MapComponent = () => {
   //  Geocodificar dirección
   const geocodificarDireccion = async (direccion) => {
     if (!direccion.trim()) return;
-    
+
     setGeocodificando(true);
     try {
       // Usar Nominatim (OpenStreetMap) para geocodificación gratuita para buscar direcciones
@@ -283,10 +298,10 @@ const MapComponent = () => {
   // FILTROS COMBINADOS
   const puntosFiltrados = puntos.filter(punto => {
     const cumpleFiltroCategoria = !filtroCategoria || punto.categoria === filtroCategoria;
-    const cumpleFiltroTexto = !busquedaTexto || 
+    const cumpleFiltroTexto = !busquedaTexto ||
       punto.nombre.toLowerCase().includes(busquedaTexto.toLowerCase()) ||
       (punto.descripcion && punto.descripcion.toLowerCase().includes(busquedaTexto.toLowerCase()));
-    
+
     return cumpleFiltroCategoria && cumpleFiltroTexto;
   });
 
@@ -300,33 +315,33 @@ const MapComponent = () => {
 
   return (
     <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', position: 'relative' }}>
-      
+
       {/* PANEL DE CONTROLES  CON RUTAS */}
-      <div style={{ 
-        padding: '15px', 
-        backgroundColor: '#f8f9fa', 
+      <div style={{
+        padding: '15px',
+        backgroundColor: '#f8f9fa',
         borderBottom: '2px solid #dee2e6',
         boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
       }}>
         <div style={{ display: 'flex', gap: '15px', alignItems: 'center', flexWrap: 'wrap' }}>
-          
+
           {/* Búsqueda por texto */}
-          <input 
-            type="text" 
+          <input
+            type="text"
             placeholder="Buscar por nombre o descripción..."
             value={busquedaTexto}
             onChange={(e) => buscarPorTexto(e.target.value)}
-            style={{ 
-              padding: '8px 12px', 
-              border: '1px solid #ccc', 
+            style={{
+              padding: '8px 12px',
+              border: '1px solid #ccc',
               borderRadius: '4px',
               minWidth: '200px'
             }}
           />
-          
+
           {/* Filtro por categoría */}
-          <select 
-            value={filtroCategoria} 
+          <select
+            value={filtroCategoria}
             onChange={(e) => setFiltroCategoria(e.target.value)}
             style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '4px' }}
           >
@@ -339,10 +354,10 @@ const MapComponent = () => {
           {/* Control de radio */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <label>Radio:</label>
-            <input 
-              type="range" 
-              min="500" 
-              max="10000" 
+            <input
+              type="range"
+              min="500"
+              max="10000"
               step="500"
               value={radioBusqueda}
               onChange={(e) => setRadioBusqueda(parseInt(e.target.value))}
@@ -352,77 +367,77 @@ const MapComponent = () => {
           </div>
 
           {/* Botones principales */}
-          <button 
-            onClick={obtenerUbicacion} 
-            style={{ 
-              padding: '8px 12px', 
-              backgroundColor: '#28a745', 
-              color: 'white', 
-              border: 'none', 
+          <button
+            onClick={obtenerUbicacion}
+            style={{
+              padding: '8px 12px',
+              backgroundColor: '#28a745',
+              color: 'white',
+              border: 'none',
               borderRadius: '4px',
               cursor: 'pointer'
             }}
           >
-             Mi ubicación
+            Mi ubicación
           </button>
 
-          <button 
-            onClick={cargarPuntos} 
-            style={{ 
-              padding: '8px 12px', 
-              backgroundColor: '#007bff', 
-              color: 'white', 
-              border: 'none', 
+          <button
+            onClick={cargarPuntos}
+            style={{
+              padding: '8px 12px',
+              backgroundColor: '#007bff',
+              color: 'white',
+              border: 'none',
               borderRadius: '4px',
               cursor: 'pointer'
             }}
           >
-             Recargar
+            Recargar
           </button>
 
-          <span style={{ 
-            marginLeft: 'auto', 
-            fontWeight: 'bold', 
-            color: '#495057' 
+          <span style={{
+            marginLeft: 'auto',
+            fontWeight: 'bold',
+            color: '#495057'
           }}>
             Mostrando: {puntosFiltrados.length} de {puntos.length} puntos
           </span>
         </div>
 
         {/* NUEVA SECCIÓN: Controles de ruta */}
-        <div style={{ 
-          marginTop: '15px', 
-          padding: '15px', 
-          backgroundColor: '#e3f2fd', 
+        <div style={{
+          marginTop: '15px',
+          padding: '15px',
+          backgroundColor: '#e3f2fd',
           borderRadius: '8px',
           border: '1px solid #bbdefb'
         }}>
           <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
             <strong style={{ color: '#1976d2' }}> Rutas:</strong>
-            
-            <input 
-              type="text" 
+
+            <input
+              type="text"
               placeholder="Ingresa dirección de destino..."
               value={direccionDestino}
               onChange={(e) => setDireccionDestino(e.target.value)}
-              style={{ 
-                padding: '8px 12px', 
-                border: '1px solid #90caf9', 
+              style={{
+                padding: '8px 12px',
+                border: '1px solid #90caf9',
                 borderRadius: '4px',
                 minWidth: '250px',
                 backgroundColor: 'white'
               }}
               onKeyPress={(e) => e.key === 'Enter' && calcularRuta()}
             />
-            
-            <button 
+
+            <button
               onClick={calcularRuta}
               disabled={geocodificando || !ubicacionUsuario}
-              style={{ 
-                padding: '8px 12px', 
-                backgroundColor: geocodificando ? '#ccc' : '#1976d2', 
-                color: 'white', 
-                border: 'none', 
+              style={{
+                padding: '8px 12px',
+                backgroundColor: geocodificando ? '#ccc' : '#1976d2',
+                color: 'white',
+                border: 'none',
                 borderRadius: '4px',
                 cursor: geocodificando ? 'not-allowed' : 'pointer'
               }}
@@ -431,42 +446,64 @@ const MapComponent = () => {
             </button>
 
             {mostrarRuta && (
-              <button 
+              <button
                 onClick={limpiarRuta}
-                style={{ 
-                  padding: '8px 12px', 
-                  backgroundColor: '#f44336', 
-                  color: 'white', 
-                  border: 'none', 
+                style={{
+                  padding: '8px 12px',
+                  backgroundColor: '#f44336',
+                  color: 'white',
+                  border: 'none',
                   borderRadius: '4px',
                   cursor: 'pointer'
                 }}
               >
-                 Limpiar ruta
+                Limpiar ruta
               </button>
             )}
 
-            <button 
-              onClick={() => setMostrarPanel(!mostrarPanel)} 
-              style={{ 
-                padding: '8px 12px', 
-                backgroundColor: '#6c757d', 
-                color: 'white', 
-                border: 'none', 
+            <button
+              onClick={() => setMostrarPanel(!mostrarPanel)}
+              style={{
+                padding: '8px 12px',
+                backgroundColor: '#6c757d',
+                color: 'white',
+                border: 'none',
                 borderRadius: '4px',
                 cursor: 'pointer'
               }}
             >
               {mostrarPanel ? 'Cerrar' : 'Ver'} Panel
             </button>
+            {/* Botón para crear nuevo punto */}
+            <button
+              onClick={() => setShowModal(true)}
+              style={{
+                padding: '8px 12px',
+                backgroundColor: '#6c757d',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer'
+              }}
+              onMouseOver={(e) => {
+                e.target.style.backgroundColor = '#0056b3';
+                e.target.style.transform = 'translateY(-2px)';
+              }}
+              onMouseOut={(e) => {
+                e.target.style.backgroundColor = '#007bff';
+                e.target.style.transform = 'translateY(0)';
+              }}
+            >
+              Nuevo Punto de Interés
+            </button>
           </div>
 
           {/* Información de la ruta */}
           {infoRuta && (
-            <div style={{ 
-              marginTop: '10px', 
-              padding: '10px', 
-              backgroundColor: 'white', 
+            <div style={{
+              marginTop: '10px',
+              padding: '10px',
+              backgroundColor: 'white',
               borderRadius: '4px',
               fontSize: '14px'
             }}>
@@ -478,7 +515,7 @@ const MapComponent = () => {
                   </span>
                 )}
                 <span style={{ marginRight: '15px' }}>
-                   Distancia: {infoRuta.distancia} km
+                  Distancia: {infoRuta.distancia} km
                 </span>
                 {infoRuta.error && (
                   <span style={{ color: '#ff9800', fontSize: '12px' }}>
@@ -493,10 +530,10 @@ const MapComponent = () => {
 
       {/* PANEL LATERAL DE INFORMACIÓN */}
       {mostrarPanel && (
-        <div style={{ 
-          position: 'absolute', 
-          top: '180px', 
-          right: '10px', 
+        <div style={{
+          position: 'absolute',
+          top: '180px',
+          right: '10px',
           width: '320px',
           maxHeight: '65vh',
           backgroundColor: 'white',
@@ -505,12 +542,12 @@ const MapComponent = () => {
           zIndex: 1000,
           overflow: 'hidden'
         }}>
-          
+
           {/* Header del panel */}
-          <div style={{ 
-            padding: '15px', 
-            backgroundColor: '#f8f9fa', 
-            borderBottom: '1px solid #dee2e6' 
+          <div style={{
+            padding: '15px',
+            backgroundColor: '#f8f9fa',
+            borderBottom: '1px solid #dee2e6'
           }}>
             <h3 style={{ margin: 0, color: '#495057' }}>Información</h3>
           </div>
@@ -533,9 +570,9 @@ const MapComponent = () => {
             <div style={{ marginTop: '15px' }}>
               <h5 style={{ margin: '0 0 8px 0', fontSize: '14px' }}>Por categorías:</h5>
               {Object.entries(obtenerEstadisticas()).map(([categoria, count]) => (
-                <div key={categoria} style={{ 
-                  display: 'flex', 
-                  justifyContent: 'space-between', 
+                <div key={categoria} style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
                   fontSize: '12px',
                   margin: '3px 0',
                   padding: '2px 8px',
@@ -550,18 +587,18 @@ const MapComponent = () => {
           </div>
 
           {/* Lista de puntos */}
-          <div style={{ 
-            maxHeight: '250px', 
+          <div style={{
+            maxHeight: '250px',
             overflowY: 'auto'
           }}>
             <div style={{ padding: '10px 15px 5px', fontSize: '14px', fontWeight: 'bold', color: '#495057' }}>
               Puntos encontrados:
             </div>
             {puntosFiltrados.slice(0, 10).map(punto => (
-              <div 
-                key={punto.id} 
-                style={{ 
-                  padding: '10px 15px', 
+              <div
+                key={punto.id}
+                style={{
+                  padding: '10px 15px',
                   borderBottom: '1px solid #f0f0f0',
                   cursor: 'pointer',
                   backgroundColor: puntoSeleccionado?.id === punto.id ? '#e3f2fd' : 'white'
@@ -595,10 +632,10 @@ const MapComponent = () => {
       {/* MAPA */}
       <div style={{ flex: 1 }}>
         {loading ? (
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'center', 
-            alignItems: 'center', 
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
             height: '100%',
             fontSize: '18px',
             color: '#666'
@@ -606,9 +643,9 @@ const MapComponent = () => {
             🌍 Cargando mapa...
           </div>
         ) : (
-          <MapContainer 
-            center={centro} 
-            zoom={13} 
+          <MapContainer
+            center={centro}
+            zoom={13}
             style={{ height: '100%', width: '100%' }}
             onClick={(e) => {
               const { lat, lng } = e.latlng;
@@ -619,23 +656,23 @@ const MapComponent = () => {
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
             />
-            
+
             {/* Componente de ruta */}
             {mostrarRuta && ubicacionUsuario && coordenadasDestino && (
-              <RutaComponent 
+              <RutaComponent
                 origen={ubicacionUsuario}
                 destino={coordenadasDestino}
                 onRutaCalculada={manejarRutaCalculada}
               />
             )}
-            
+
             {/* Círculo de búsqueda */}
             {puntoClick && (
               <Circle
                 center={puntoClick}
                 radius={radioBusqueda}
-                pathOptions={{ 
-                  color: '#007bff', 
+                pathOptions={{
+                  color: '#007bff',
                   fillColor: '#007bff',
                   fillOpacity: 0.1,
                   weight: 2,
@@ -646,7 +683,7 @@ const MapComponent = () => {
 
             {/* Marcador de ubicación del usuario */}
             {ubicacionUsuario && (
-              <Marker 
+              <Marker
                 position={ubicacionUsuario}
                 icon={L.divIcon({
                   html: `<div style="background: #28a745; border-radius: 50%; 
@@ -669,7 +706,7 @@ const MapComponent = () => {
 
             {/* Marcador de destino */}
             {coordenadasDestino && (
-              <Marker 
+              <Marker
                 position={coordenadasDestino}
                 icon={L.divIcon({
                   html: `<div style="background: #ff6b6b; border-radius: 50%; 
@@ -693,11 +730,11 @@ const MapComponent = () => {
                 </Popup>
               </Marker>
             )}
-            
+
             {/* Marcadores de puntos de interés */}
             {puntosFiltrados.map(punto => (
-              <Marker 
-                key={punto.id} 
+              <Marker
+                key={punto.id}
                 position={[punto.latitud, punto.longitud]}
                 icon={crearIconoPersonalizado(punto.categoria)}
               >
@@ -706,45 +743,45 @@ const MapComponent = () => {
                     <h4 style={{ margin: '0 0 12px 0', color: '#333', borderBottom: '2px solid #eee', paddingBottom: '8px' }}>
                       {iconosPorCategoria[punto.categoria]} {punto.nombre}
                     </h4>
-                    
+
                     <div style={{ fontSize: '14px', lineHeight: '1.4' }}>
                       <p style={{ margin: '8px 0' }}>
                         <strong>📂 Categoría:</strong> {punto.categoria}
                       </p>
-                      
+
                       {punto.descripcion && (
                         <p style={{ margin: '8px 0' }}>
                           <strong>📝 Descripción:</strong> {punto.descripcion}
                         </p>
                       )}
-                      
+
                       {punto.direccion && (
                         <p style={{ margin: '8px 0' }}>
                           <strong>📍 Dirección:</strong> {punto.direccion}
                         </p>
                       )}
-                      
+
                       {punto.telefono && (
                         <p style={{ margin: '8px 0' }}>
-                          <strong>📞 Teléfono:</strong> 
+                          <strong>📞 Teléfono:</strong>
                           <a href={`tel:${punto.telefono}`} style={{ marginLeft: '5px', color: '#007bff' }}>
                             {punto.telefono}
                           </a>
                         </p>
                       )}
-                      
+
                       {punto.email && (
                         <p style={{ margin: '8px 0' }}>
-                          <strong>✉️ Email:</strong> 
+                          <strong>✉️ Email:</strong>
                           <a href={`mailto:${punto.email}`} style={{ marginLeft: '5px', color: '#007bff' }}>
                             {punto.email}
                           </a>
                         </p>
                       )}
-                      
+
                       {punto.website && (
                         <p style={{ margin: '8px 0' }}>
-                          <strong>🌐 Web:</strong> 
+                          <strong>🌐 Web:</strong>
                           <a href={punto.website} target="_blank" rel="noopener noreferrer" style={{ marginLeft: '5px', color: '#007bff' }}>
                             Visitar sitio
                           </a>
@@ -771,15 +808,15 @@ const MapComponent = () => {
                               width: '100%'
                             }}
                           >
-                             Cómo llegar aquí
+                            Cómo llegar aquí
                           </button>
                         </div>
                       )}
                     </div>
 
-                    <div style={{ 
-                      marginTop: '12px', 
-                      paddingTop: '8px', 
+                    <div style={{
+                      marginTop: '12px',
+                      paddingTop: '8px',
                       borderTop: '1px solid #eee',
                       fontSize: '12px',
                       color: '#666'
@@ -791,6 +828,13 @@ const MapComponent = () => {
               </Marker>
             ))}
           </MapContainer>
+        )}
+        {/* llama al componente Modal para crear nuevo punto */}
+        {showModal && (
+          <CrearPuntoInteresModal
+            onClose={handleCloseModal}
+            onPuntoCreado={handlePuntoCreado}
+          />
         )}
       </div>
     </div>

@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from 'react-le
 import axios from 'axios'; //Para hacer peticiones HTTP a APIs
 import L from 'leaflet'; // Biblioteca principal para mapas
 import 'leaflet/dist/leaflet.css'; //Estilos CSS base de Leaflet
+import Swal from 'sweetalert2';
 import CrearPuntoInteresModal from './CrearPuntoInteresModal';
 
 // Fix para iconos de Leaflet
@@ -134,6 +135,7 @@ const MapComponent = () => {
   const [filtroCategoria, setFiltroCategoria] = useState('');
   const [categorias, setCategorias] = useState([]);
 
+
   // Estados existentes
   const [busquedaTexto, setBusquedaTexto] = useState('');
   const [radioBusqueda, setRadioBusqueda] = useState(2000);
@@ -161,6 +163,9 @@ const MapComponent = () => {
   const [puntosInteres, setPuntosInteres] = useState([]);
   const [showModal, setShowModal] = useState(false);
 
+  // ESTADO PARA MANEJAR PUNTOS VISITADOS
+  const [puntosVisitados, setPuntosVisitados] = useState(new Set());
+
   // Función para manejar cuando se crea un nuevo punto
   const handlePuntoCreado = (nuevoPunto) => {
     setPuntosInteres(prevPuntos => [...prevPuntos, nuevoPunto]);
@@ -170,6 +175,7 @@ const MapComponent = () => {
   const handleCloseModal = () => {
     setShowModal(false);
   };
+
 
   const cargarPuntos = async () => {
     try {
@@ -201,6 +207,28 @@ const MapComponent = () => {
       setPuntos(response.data);
     } catch (error) {
       console.error('Error buscando puntos cercanos:', error);
+    }
+  };
+
+  const handleMarcarVisitado = async (puntoId) => {
+    try {
+      await axios.put(`${API_BASE_URL}/puntos/${puntoId}/marcar-visitado`);
+      // Actualiza el estado local del punto
+      setPuntosInteres(prevPuntos =>
+        prevPuntos.map(p =>
+          p.id === puntoId ? { ...p, visitado: true } : p
+        ));
+
+      Swal.fire({
+        icon: 'success',
+        title: 'Éxito',
+        text: 'Punto marcado como visitado',
+        timer: 2000
+      });
+      // recarlo los puntos para visualizar el estado de visitado
+      cargarPuntos();
+    } catch (error) {
+      Swal.fire('Error', 'No se pudo marcar el punto como visitado', 'error');
     }
   };
 
@@ -786,6 +814,24 @@ const MapComponent = () => {
                             Visitar sitio
                           </a>
                         </p>
+                      )}
+
+                      {/* Botón para marcar como visitado */}
+                      {!punto.visitado && (
+                        <button
+                          onClick={() => handleMarcarVisitado(punto.id)}
+                          style={{
+                            padding: '6px 12px',
+                            background: '#28a745',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            marginTop: '8px'
+                          }}
+                        >
+                          Marcar como visitado
+                        </button>
                       )}
 
                       {/* NUEVO: Botón para calcular ruta a este punto */}

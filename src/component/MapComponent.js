@@ -25,15 +25,29 @@ const iconosPorCategoria = {
   'Banco': '🏦'
 };
 
-const crearIconoPersonalizado = (categoria) => {
+const crearIconoPersonalizado = (categoria, visitado=true) => {
+  let color; 
+  if(visitado){
+    color = '#2ed573'; // Verde para visitados
+  }else { 
+    color = '#4285F4'; // azul NO visitados
+  }
   return L.divIcon({
-    html: `<div style="background: #4285F4; border-radius: 50%; 
+    html: `<div style="background: ${color}; border-radius: 50%; 
            width: 30px; height: 30px; display: flex; 
            align-items: center; justify-content: center; 
            font-size: 16px; color: white; border: 2px solid white;
-           box-shadow: 0 2px 4px rgba(0,0,0,0.3);">
-           ${iconosPorCategoria[categoria] || '📍'}
-           </div>`,
+           box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+           ${visitado ? 'animation: pulse 2s infinite;' : ''}">
+           ${visitado ? '✓' :(iconosPorCategoria[categoria] || '📍')}
+           </div>
+           ${visitado ? `<style>
+            @keyframes pulse {
+              0% { transform: scale(1); }
+              50% { transform: scale(1.05); }
+              100% { transform: scale(1); }
+            }
+            </style>` : ''}`,  // aqui cierra
     className: 'custom-marker',
     iconSize: [30, 30],
     iconAnchor: [15, 15]
@@ -764,12 +778,13 @@ const MapComponent = () => {
               <Marker
                 key={punto.id}
                 position={[punto.latitud, punto.longitud]}
-                icon={crearIconoPersonalizado(punto.categoria)}
+                icon={crearIconoPersonalizado(punto.categoria, punto.visitado)}
               >
                 <Popup maxWidth={300}>
                   <div style={{ minWidth: '250px' }}>
                     <h4 style={{ margin: '0 0 12px 0', color: '#333', borderBottom: '2px solid #eee', paddingBottom: '8px' }}>
                       {iconosPorCategoria[punto.categoria]} {punto.nombre}
+                      {punto.visitado && <span style={{ color: '#28a745', marginLeft: '8px', fontSize: '12px' }}>✅ Visitado</span>}
                     </h4>
 
                     <div style={{ fontSize: '14px', lineHeight: '1.4' }}>

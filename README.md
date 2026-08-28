@@ -2,20 +2,6 @@
 
 Sistema de mapas interactivo para visualización y gestión de puntos de interés georreferenciados, desarrollado con React y Leaflet.
 
-## 📋 Tabla de Contenidos
-
-- [Características Principales](#características-principales)
-- [Tecnologías Utilizadas](#tecnologías-utilizadas)
-- [Instalación](#instalación)
-- [Configuración](#configuración)
-- [Funcionalidades Detalladas](#funcionalidades-detalladas)
-- [Estructura del Proyecto](#estructura-del-proyecto)
-- [API Endpoints](#api-endpoints)
-- [Uso de la Aplicación](#uso-de-la-aplicación)
-- [Capturas de Pantalla](#capturas-de-pantalla)
-- [Personalización](#personalización)
-- [Solución de Problemas](#solución-de-problemas)
-
 ## 🚀 Características Principales
 
 - ✅ **Visualización interactiva** de puntos de interés en mapa
@@ -336,25 +322,7 @@ console.log('Puntos cargados:', puntos);
 console.log('Filtros aplicados:', { filtroCategoria, busquedaTexto });
 console.log('Punto de búsqueda:', puntoClick);
 ```
-
-
-### Funcionalidades Propuestas
-
-
-## 📄 Licencia
-
-Este proyecto está bajo la Licencia MIT. Ver `LICENSE` para más detalles.
-
-## 📞 Contacto y Soporte
-
-- **Desarrollador**: 
-- **Email**: tu.email@ejemplo.com
-- **Proyecto**: [GitHub Repository](https://github.com/tu-usuario/gis-project-front)
-- **Issues**: [Reportar Problemas](https://github.com/tu-usuario/gis-project-front/issues)
-
 ---
-
-## 📋 Changelog
 
 ### Versión 1.0.0 (Actual)
 - ✅ Implementación inicial del mapa
@@ -365,4 +333,8 @@ Este proyecto está bajo la Licencia MIT. Ver `LICENSE` para más detalles.
 - ✅ Geolocalización del usuario
 - ✅ Interfaz responsive
 
-### Próximas Versiones
+---
+## 🔗 Repositorios del Ecosistema GIS
+
+* 💻 **Frontend Web:** [GIS_Project_Front](https://github.com/Bfarez21/GIS_Project_Front)
+* ⚙️ **Backend API:** [GIS_Project_Back](https://github.com/Bfarez21/GIS_Project_Back)

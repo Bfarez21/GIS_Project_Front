@@ -253,8 +253,7 @@ const iconosPorCategoria = {
 4. Analizar distribución en estadísticas
 
 ## 📸 Capturas de Pantalla
-
-```
+...
 
 | Vista General & Marcadores | Panel Lateral de Estadísticas |
 | :---: | :---: |
@@ -263,7 +262,7 @@ const iconosPorCategoria = {
 | Búsqueda por Proximidad | Popup Informativo de POI |
 | :---: | :---: |
 | ![Búsqueda Proximidad](./screenshots/03-busqueda-proximidad.png) | ![Popup Informativo](./screenshots/04-popup-info.png) |
-```
+...
 ## 🎨 Personalización
 
 ### Cambiar Iconos

@@ -255,27 +255,15 @@ const iconosPorCategoria = {
 ## 📸 Capturas de Pantalla
 
 ```
-🖼️ [Captura del mapa principal con puntos]
-- Vista general con todos los marcadores
-- Panel de controles visible
-- Diferentes iconos por categoría
 
-🖼️ [Captura del panel lateral]  
-- Estadísticas actualizadas
-- Lista de puntos filtrados
-- Distribución por categorías
+| Vista General & Marcadores | Panel Lateral de Estadísticas |
+| :---: | :---: |
+| ![Mapa Principal](./screenshots/01-mapa-principal.png) | ![Panel Lateral](./screenshots/02-panel-lateral.png) |
 
-🖼️ [Captura de búsqueda por proximidad]
-- Círculo de búsqueda activo
-- Marcador de ubicación del usuario
-- Resultados filtrados por distancia
-
-🖼️ [Captura de popup informativo]
-- Información completa del punto
-- Enlaces funcionales
-- Formato organizado
+| Búsqueda por Proximidad | Popup Informativo de POI |
+| :---: | :---: |
+| ![Búsqueda Proximidad](./screenshots/03-busqueda-proximidad.png) | ![Popup Informativo](./screenshots/04-popup-info.png) |
 ```
-
 ## 🎨 Personalización
 
 ### Cambiar Iconos
